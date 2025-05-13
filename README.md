@@ -11,4 +11,36 @@ Model's internal memory is limited by context window size. Context windows is a 
 
 Unlike in-context learning, which relies on the LLM's internal context window, structured memory stores information outside of the model's immediate memory.
 
+---
+
 ## Building a Chatbot Memory System
+
+Building a robust chatbot memory system boils down to a few core patterns:
+
+1. Sliding-Window (Raw Chat History)
+
+- What it is: Keep the last `N` messages in the prompt.
+- How it works: On each turn, you append the new **user+assistant** exchange to a buffer and trim it once it exceeds the token limit.
+- This is trivial to implement, and it is always exact.
+- However, you quickly runs out of **context** capacity. Plus, early history is lost as you exceed N messages.
+
+2. Summarization / Condensation Memory
+
+- What it is: Periodically compress old history into a short summary.
+- How it works: After every `M` turns (or whenever the buffer grows too big), send the oldest chunk to the LLM with a "summarize these into bullet points" prompt.
+
+3. Embedding-Based Retrieval Memory (RAG-Style)
+4. Structured / Key-Value Memory
+5. **Hybrid Approaches**:
+- Often the best systems mix two or more techniques:
+- Raw buffer for the most recent few turns
+- Summaries for medium-term context
+- Vector retrieval for important long-term facts
+- Key-value for user-specific preferences or profile data
+
+Many LLM frameworks provide abstractions/wrappers for robust llm memory system. E.g. LangChain:
+
+- ConversationBufferMemory (sliding window)
+- ConversationSummaryMemory (auto-summaries)
+- VectorStoreRetrieverMemory (RAG)
+- CombinedMemory (mix & match)
